@@ -6,25 +6,27 @@
 #include "stm32l475e_iot01_magneto.h"
 #include "stm32l475e_iot01_gyro.h"
 #include "stm32l475e_iot01_accelero.h"
+#include "Servo.h"
 
 
 DigitalOut led(LED1);
 
 /* Defines */
-#define INTERVAL_SIZE 20
 #define BUFFER_SIZE 10
 
 
 /*Declaration */
 
 void checkData();
+void controlServo(Servo servo);
+
 
 
 int main() {
     /* Local variables declaration */
     int16_t pDataXYZ[3] = {0};
     float pGyroDataXYZ[3] = {0};
-    int interval = 0;
+
     //magnetometer buffers
     CircularBuffer<int16_t, BUFFER_SIZE> magnoXBuf;
     CircularBuffer<int16_t, BUFFER_SIZE> magnoYBuf;
@@ -45,41 +47,46 @@ int main() {
     BSP_GYRO_Init();
     BSP_ACCELERO_Init();
 
+    //Configure eventqueue to run checkData() every 20ms
+    EventQueue queue;
+    queue.call_every(20, checkData);
+
+    //Configure Servo motor
+    Servo servo(D0);
+
     //main loop
     while (1) {
-        if (interval == INTERVAL_SIZE) { //call the function to check circle queue
-            led = 1;
-            checkData();
-            interval = 0;
-            led = 0;
-        } else { //read the sensors and fill the buffer queue
-            BSP_MAGNETO_GetXYZ(pDataXYZ);
-            magnoXBuf.push(pDataXYZ[0]);
-            magnoYBuf.push(pDataXYZ[1]);
-            magnoZBuf.push(pDataXYZ[2]);
-           
+         BSP_MAGNETO_GetXYZ(pDataXYZ);
+        magnoXBuf.push(pDataXYZ[0]);
+        magnoYBuf.push(pDataXYZ[1]);
+        magnoZBuf.push(pDataXYZ[2]);
             
-            BSP_GYRO_GetXYZ(pGyroDataXYZ);
-            gyroXBuf.push(pGyroDataXYZ[0]);
-            gyroYBuf.push(pGyroDataXYZ[1]);
-            gyroZBuf.push(pGyroDataXYZ[2]);
+        BSP_GYRO_GetXYZ(pGyroDataXYZ);
+        gyroXBuf.push(pGyroDataXYZ[0]);
+        gyroYBuf.push(pGyroDataXYZ[1]);
+        gyroZBuf.push(pGyroDataXYZ[2]);
             
-            BSP_ACCELERO_AccGetXYZ(pDataXYZ);
-            acceloXBuf.push(pDataXYZ[0]);
-            acceloYBuf.push(pDataXYZ[1]);
-            acceloZBuf.push(pDataXYZ[2]);
-
-            interval = interval + 1;
-
-        }
-
-
+        BSP_ACCELERO_AccGetXYZ(pDataXYZ);
+        acceloXBuf.push(pDataXYZ[0]);
+        acceloYBuf.push(pDataXYZ[1]);
+        acceloZBuf.push(pDataXYZ[2]);
     }
 
 }
 
 void checkData() {
     printf("\n\n\n THIS IS CHECK DATA \n\n\n");
+}
+
+void controlServo(Servo servo){
+     for(int i=0; i<100; i++) {
+             servo = i/100.0;
+            wait(0.01);
+         }
+         for(int i=100; i>0; i--) {
+             servo = i/100.0;
+             wait(0.01);
+         }
 }
 
 
