@@ -198,7 +198,7 @@ public:
         return data_updated;
     }
 
-private:
+protected:
     T _pool[BufferSize];
     CounterType _head;
     CounterType _tail;
