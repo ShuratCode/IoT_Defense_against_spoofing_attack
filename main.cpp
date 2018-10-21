@@ -18,7 +18,7 @@ DigitalOut led(LED1);
 /*Declaration */
 
 void checkData();
-void controlServo(Servo servo);
+void controlServo(Servo servo, float pGyroDataXYZ[3]);
 
 
 
@@ -61,15 +61,17 @@ int main() {
         magnoYBuf.push(pDataXYZ[1]);
         magnoZBuf.push(pDataXYZ[2]);
             
-        BSP_GYRO_GetXYZ(pGyroDataXYZ);
-        gyroXBuf.push(pGyroDataXYZ[0]);
-        gyroYBuf.push(pGyroDataXYZ[1]);
-        gyroZBuf.push(pGyroDataXYZ[2]);
-            
         BSP_ACCELERO_AccGetXYZ(pDataXYZ);
         acceloXBuf.push(pDataXYZ[0]);
         acceloYBuf.push(pDataXYZ[1]);
         acceloZBuf.push(pDataXYZ[2]);
+
+        BSP_GYRO_GetXYZ(pGyroDataXYZ);
+        gyroXBuf.push(pGyroDataXYZ[0]);
+        gyroYBuf.push(pGyroDataXYZ[1]);
+        gyroZBuf.push(pGyroDataXYZ[2]);
+        
+        controlServo(servo, pGyroDataXYZ);
     }
 
 }
@@ -78,15 +80,9 @@ void checkData() {
     printf("\n\n\n THIS IS CHECK DATA \n\n\n");
 }
 
-void controlServo(Servo servo){
-     for(int i=0; i<100; i++) {
-             servo = i/100.0;
-            wait(0.01);
-         }
-         for(int i=100; i>0; i--) {
-             servo = i/100.0;
-             wait(0.01);
-         }
+void controlServo(Servo servo, float pGyroDataXYZ[3]){
+     float xGyro = pGyroDataXYZ[0];
+     servo = xGyro/100.0;
 }
 
 
