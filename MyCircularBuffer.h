@@ -13,7 +13,7 @@ class MyCircularBuffer: public CircularBuffer<T, BufferSize, uint32_t>
 { 
     public:
     T& operator[] (long i){
-        return _pool[_head + i];
+        return CircularBuffer<T, BufferSize, uint32_t>::_pool[CircularBuffer<T, BufferSize, uint32_t>::_head + i];
     }
     ~MyCircularBuffer(){}
     void print_array();
