@@ -82,7 +82,7 @@ void checkData() {
 
 void controlServo(Servo servo, float pGyroDataXYZ[3]){
      float xGyro = pGyroDataXYZ[0];
-     servo = xGyro/100.0;
+     servo = xGyro/1000.0;
 }
 
 
