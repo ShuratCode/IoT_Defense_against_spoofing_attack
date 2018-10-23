@@ -18,12 +18,11 @@ DigitalOut led(LED1);
 /*Declaration */
 
 void checkData();
-void controlServo(Servo servo, float pGyroDataXYZ[3]);
+void controlServo(float pGyroDataXYZ[3]);
+void read_magnetometer();
+void read_gyro_accelerometer();
 
-
-
-int main() {
-    /* Local variables declaration */
+ /* Local variables declaration */
     int16_t pDataXYZ[3] = {0};
     float pGyroDataXYZ[3] = {0};
 
@@ -42,6 +41,13 @@ int main() {
     CircularBuffer<float, BUFFER_SIZE> gyroYBuf;
     CircularBuffer<float, BUFFER_SIZE> gyroZBuf;
 
+    //Configure Servo motor
+    // Servo servo(D0);
+    PwmOut _pwm(D0);
+
+
+int main() {
+   
     //Initiate the sensors
     BSP_MAGNETO_Init();
     BSP_GYRO_Init();
@@ -50,18 +56,32 @@ int main() {
     //Configure eventqueue to run checkData() every 20ms
     EventQueue queue;
     queue.call_every(20, checkData);
+    queue.call_every(25, read_magnetometer);
+    queue.call_every(80, read_gyro_accelerometer);
+    queue.dispatch(-1);
 
-    //Configure Servo motor
-    Servo servo(D0);
+    
 
-    //main loop
-    while (1) {
-         BSP_MAGNETO_GetXYZ(pDataXYZ);
+}
+
+void checkData() {
+    //printf("\n\n\n THIS IS CHECK DATA \n\n\n");
+}
+
+void controlServo(float pGyroDataXYZ[3]){
+     float xGyro = pGyroDataXYZ[0];
+     _pwm.pulsewidth_us(1500+xGyro/1000.0);
+}
+
+void read_magnetometer(){
+     BSP_MAGNETO_GetXYZ(pDataXYZ);
         magnoXBuf.push(pDataXYZ[0]);
         magnoYBuf.push(pDataXYZ[1]);
         magnoZBuf.push(pDataXYZ[2]);
-            
-        BSP_ACCELERO_AccGetXYZ(pDataXYZ);
+}
+
+void read_gyro_accelerometer(){
+    BSP_ACCELERO_AccGetXYZ(pDataXYZ);
         acceloXBuf.push(pDataXYZ[0]);
         acceloYBuf.push(pDataXYZ[1]);
         acceloZBuf.push(pDataXYZ[2]);
@@ -71,18 +91,7 @@ int main() {
         gyroYBuf.push(pGyroDataXYZ[1]);
         gyroZBuf.push(pGyroDataXYZ[2]);
         
-        controlServo(servo, pGyroDataXYZ);
-    }
-
-}
-
-void checkData() {
-    printf("\n\n\n THIS IS CHECK DATA \n\n\n");
-}
-
-void controlServo(Servo servo, float pGyroDataXYZ[3]){
-     float xGyro = pGyroDataXYZ[0];
-     servo = xGyro/1000.0;
+        controlServo(pGyroDataXYZ);
 }
 
 
