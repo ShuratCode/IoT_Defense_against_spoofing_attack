@@ -7,6 +7,10 @@
 #include "stm32l475e_iot01_gyro.h"
 #include "stm32l475e_iot01_accelero.h"
 
+#include "Features.h"
+#include <iostream>
+using namespace std;
+
 
 DigitalOut led(LED1);
 
@@ -47,7 +51,12 @@ PwmOut _pwm(D0);
  * Main function. Initialize the sensors and set up the event queue
  */
 int main() {
-   
+
+    //Features example
+    Features f;
+    float data[] = {1,2,3,4,5,6,7,8,9,10};
+    printf("The mean is %f, std is %f, avgDev is %f", f.mean(data, BUFFER_SIZE), f.standardDev(data, BUFFER_SIZE), f.avgDev(data, BUFFER_SIZE));
+
     //Initiate the sensors
     BSP_MAGNETO_Init();
     BSP_GYRO_Init();

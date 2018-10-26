@@ -4,7 +4,6 @@
 #define FEATURES_H
 #include <cmath>
 #include <iostream>
-#include <cstdint>
 using std::abs;
 class Features
 { 
