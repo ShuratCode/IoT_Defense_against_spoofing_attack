@@ -3,7 +3,6 @@
 #ifndef MYCIRCULARBUFFER_H
 #define MYCIRCULARBUFFER_H
 #include "CircularBuffer.h"
-#include <iostream>
 #include "platform/mbed_critical.h"
 #include "platform/mbed_assert.h"
 class CircularBuffer;
@@ -16,7 +15,6 @@ class MyCircularBuffer: public CircularBuffer<T, BufferSize, uint32_t>
         return CircularBuffer<T, BufferSize, uint32_t>::_pool[CircularBuffer<T, BufferSize, uint32_t>::_head + i];
     }
     ~MyCircularBuffer(){}
-    void print_array();
 };
 
 }
