@@ -17,7 +17,7 @@ float Features::avgDev(float data[], int size){
     {
         sum += abs(data[i]-avg);
     }
-    return sqrt(sum/size);
+    return sum/size;
 }
 
 float Features::mean(float data[], int size){
