@@ -7,7 +7,8 @@
 #include "stm32l475e_iot01_gyro.h"
 #include "stm32l475e_iot01_accelero.h"
 
-#include "Features.h"
+#include <cmath>
+#include "MyCircularBuffer.h"
 #include <iostream>
 using namespace std;
 
@@ -15,7 +16,7 @@ using namespace std;
 DigitalOut led(LED1);
 
 /* Defines */
-#define BUFFER_SIZE 10
+#define BUFFER_SIZE 521
 
 
 /*Declaration */
@@ -29,20 +30,14 @@ void read_gyro_accelerometer();
 int16_t pDataXYZ[3] = {0};
 float pGyroDataXYZ[3] = {0};
     
-//magnetometer buffers
-CircularBuffer<int16_t, BUFFER_SIZE> magnoXBuf;
-CircularBuffer<int16_t, BUFFER_SIZE> magnoYBuf;
-CircularBuffer<int16_t, BUFFER_SIZE> magnoZBuf;
+//magnetometer buffer
+MyCircularBuffer<int16_t, BUFFER_SIZE> magnoBuf;
 
-//accelerometer buffers
-CircularBuffer<int16_t, BUFFER_SIZE> acceloXBuf;
-CircularBuffer<int16_t, BUFFER_SIZE> acceloYBuf;
-CircularBuffer<int16_t, BUFFER_SIZE> acceloZBuf;
+//accelerometer buffer
+MyCircularBuffer<int16_t, BUFFER_SIZE> acceloBuf;
 
 //gyro buffers
-CircularBuffer<float, BUFFER_SIZE> gyroXBuf;
-CircularBuffer<float, BUFFER_SIZE> gyroYBuf;
-CircularBuffer<float, BUFFER_SIZE> gyroZBuf;
+MyCircularBuffer<float, BUFFER_SIZE> gyroBuf;
 
 //Configure PwmOut
 PwmOut _pwm(D0);
@@ -52,11 +47,6 @@ PwmOut _pwm(D0);
  */
 int main() {
 
-    //Features example
-    Features f;
-    float data[] = {1,2,3,4,5,6,7,8,9,10};
-    printf("The mean is %f, std is %f, avgDev is %f", f.mean(data, BUFFER_SIZE), f.standardDev(data, BUFFER_SIZE), f.avgDev(data, BUFFER_SIZE));
-
     //Initiate the sensors
     BSP_MAGNETO_Init();
     BSP_GYRO_Init();
@@ -64,9 +54,9 @@ int main() {
 
     //Configure eventqueue 
     EventQueue queue;
-    queue.call_every(20, checkData);
-    queue.call_every(25, read_magnetometer);
-    queue.call_every(80, read_gyro_accelerometer);
+    //queue.call_every(2000, checkData);
+    //queue.call_every(2000, read_magnetometer);
+    queue.call_every(20, read_gyro_accelerometer);
     queue.dispatch(-1);
 }
 
@@ -74,7 +64,6 @@ int main() {
  * Check the buffers and decide if we have an attack
  */ 
 void checkData() {
-    //TODO: Completes
 }
 
 /**
@@ -91,10 +80,8 @@ void controlServo(float pGyroDataXYZ[3]){
  * Read the data from the magnetometer
  */
 void read_magnetometer(){
-     BSP_MAGNETO_GetXYZ(pDataXYZ);
-        magnoXBuf.push(pDataXYZ[0]);
-        magnoYBuf.push(pDataXYZ[1]);
-        magnoZBuf.push(pDataXYZ[2]);
+    BSP_MAGNETO_GetXYZ(pDataXYZ);
+    magnoBuf.push(sqrt(pow(pDataXYZ[0],2) + pow(pDataXYZ[1],2) + pow(pDataXYZ[2],2)));
 }
 
 /**
@@ -102,16 +89,18 @@ void read_magnetometer(){
  */
 void read_gyro_accelerometer(){
     BSP_ACCELERO_AccGetXYZ(pDataXYZ);
-        acceloXBuf.push(pDataXYZ[0]);
-        acceloYBuf.push(pDataXYZ[1]);
-        acceloZBuf.push(pDataXYZ[2]);
+    //acceloBuf.push(sqrt(pow(pDataXYZ[0],2) + pow(pDataXYZ[1],2) + pow(pDataXYZ[2],2)));
+    if(gyroBuf.full())
+    {
+        printf("Max Mean Min StandardDev AvgDev \n %f %f %f %f %f", gyroBuf.max(), gyroBuf.mean(), gyroBuf.min(), gyroBuf.standardDev(), gyroBuf.avgDev());
+        exit(1);
+    }
+    else{
+        gyroBuf.push(sqrt(pow(pDataXYZ[0],2) + pow(pDataXYZ[1],2) + pow(pDataXYZ[2],2)));
+        printf("num of values: %u\n", gyroBuf.size());
+    }
 
-        BSP_GYRO_GetXYZ(pGyroDataXYZ);
-        gyroXBuf.push(pGyroDataXYZ[0]);
-        gyroYBuf.push(pGyroDataXYZ[1]);
-        gyroZBuf.push(pGyroDataXYZ[2]);
-        
-        controlServo(pGyroDataXYZ);
+    //controlServo(pGyroDataXYZ);
 }
 
 
