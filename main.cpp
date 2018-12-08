@@ -65,7 +65,7 @@ int main() {
  * Check the buffers and decide if we have an attack
  */ 
 void checkData() {
-    //TODO: Completes
+    //TODO: Complete
 }
 
 /**
