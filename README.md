@@ -1,8 +1,8 @@
 # Final_Project
 
-This is my final project for BSC degree.
+This is our final project for BSC degree.
 
-To compile the project please install mbed-cli and use the command:
-mbed compile -m DISCO_L475VG_IOT01A -t gcc_arm
+To compile the project please install mbed-cli and then you can use the Build_and_copy script (for windwos only for now).
+You will need to give it the full path for the copy as an first argument
 
-More details will come later
+We used python script to collect the data and saved it on our systems
