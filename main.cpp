@@ -55,8 +55,8 @@ int main() {
     //Configure eventqueue 
     EventQueue queue;
     //queue.call_every(2000, checkData);
-    //queue.call_every(2000, read_magnetometer);
-    queue.call_every(20, read_gyro_accelerometer);
+    queue.call_every(25, read_magnetometer);
+    queue.call_every(80, read_gyro_accelerometer);
     queue.dispatch(-1);
 }
 
@@ -89,18 +89,18 @@ void read_magnetometer(){
  */
 void read_gyro_accelerometer(){
     BSP_ACCELERO_AccGetXYZ(pDataXYZ);
+    controlServo(pGyroDataXYZ);
     //acceloBuf.push(sqrt(pow(pDataXYZ[0],2) + pow(pDataXYZ[1],2) + pow(pDataXYZ[2],2)));
     if(gyroBuf.full())
     {
         printf("Max Mean Min StandardDev AvgDev \n %f %f %f %f %f", gyroBuf.max(), gyroBuf.mean(), gyroBuf.min(), gyroBuf.standardDev(), gyroBuf.avgDev());
-        exit(1);
+    //    exit(1);
     }
     else{
         gyroBuf.push(sqrt(pow(pDataXYZ[0],2) + pow(pDataXYZ[1],2) + pow(pDataXYZ[2],2)));
-        printf("num of values: %u\n", gyroBuf.size());
+       // printf("num of values: %u\n", gyroBuf.size());
     }
 
-    //controlServo(pGyroDataXYZ);
 }
 
 
