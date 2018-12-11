@@ -54,7 +54,7 @@ int main() {
 
     //Configure eventqueue 
     EventQueue queue;
-    //queue.call_every(2000, checkData);
+    queue.call_every(2000, checkData);
     queue.call_every(25, read_magnetometer);
     queue.call_every(80, read_gyro_accelerometer);
     queue.dispatch(-1);
@@ -64,10 +64,6 @@ int main() {
  * Check the buffers and decide if we have an attack
  */ 
 void checkData() {
-<<<<<<< HEAD
-=======
-    //TODO: Complete
->>>>>>> b2bc2fca055a79ffebd416b23efcd0db02a8189c
 }
 
 /**
@@ -97,14 +93,10 @@ void read_gyro_accelerometer(){
     //acceloBuf.push(sqrt(pow(pDataXYZ[0],2) + pow(pDataXYZ[1],2) + pow(pDataXYZ[2],2)));
     if(gyroBuf.full())
     {
-        printf("Max Mean Min StandardDev AvgDev \n %f %f %f %f %f", gyroBuf.max(), gyroBuf.mean(), gyroBuf.min(), gyroBuf.standardDev(), gyroBuf.avgDev());
-    //    exit(1);
-    }
-    else{
-        gyroBuf.push(sqrt(pow(pDataXYZ[0],2) + pow(pDataXYZ[1],2) + pow(pDataXYZ[2],2)));
-       // printf("num of values: %u\n", gyroBuf.size());
-    }
+        printf("%f %f %f %f %f\n", gyroBuf.max(), gyroBuf.mean(), gyroBuf.min(), gyroBuf.standardDev(), gyroBuf.avgDev());
 
+    }
+    gyroBuf.push(sqrt(pow(pDataXYZ[0],2) + pow(pDataXYZ[1],2) + pow(pDataXYZ[2],2)));
 }
 
 
