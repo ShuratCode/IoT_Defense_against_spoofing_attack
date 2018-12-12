@@ -88,7 +88,7 @@ void read_magnetometer(){
  * Read the data from the accelerometer and from the gyro
  */
 void read_gyro_accelerometer(){
-    BSP_ACCELERO_AccGetXYZ(pDataXYZ);
+    BSP_GYRO_GetXYZ(pGyroDataXYZ);
     controlServo(pGyroDataXYZ);
     //acceloBuf.push(sqrt(pow(pDataXYZ[0],2) + pow(pDataXYZ[1],2) + pow(pDataXYZ[2],2)));
     if(gyroBuf.full())
