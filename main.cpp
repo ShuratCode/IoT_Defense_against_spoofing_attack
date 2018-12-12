@@ -54,9 +54,9 @@ int main() {
 
     //Configure eventqueue 
     EventQueue queue;
-    //queue.call_every(2000, checkData);
-    //queue.call_every(2000, read_magnetometer);
-    queue.call_every(20, read_gyro_accelerometer);
+    queue.call_every(2000, checkData);
+    queue.call_every(25, read_magnetometer);
+    queue.call_every(80, read_gyro_accelerometer);
     queue.dispatch(-1);
 }
 
@@ -64,7 +64,6 @@ int main() {
  * Check the buffers and decide if we have an attack
  */ 
 void checkData() {
-    //TODO: Complete
 }
 
 /**
@@ -89,6 +88,7 @@ void read_magnetometer(){
  * Read the data from the accelerometer and from the gyro
  */
 void read_gyro_accelerometer(){
+<<<<<<< HEAD
     BSP_ACCELERO_AccGetXYZ(pDataXYZ);
     BSP_GYRO_GetXYZ(pGyroDataXYZ);
     //acceloBuf.push(sqrt(pow(pDataXYZ[0],2) + pow(pDataXYZ[1],2) + pow(pDataXYZ[2],2)));
@@ -103,6 +103,17 @@ void read_gyro_accelerometer(){
     //}
 
     controlServo(pGyroDataXYZ);
+=======
+    BSP_GYRO_GetXYZ(pGyroDataXYZ);
+    controlServo(pGyroDataXYZ);
+    //acceloBuf.push(sqrt(pow(pDataXYZ[0],2) + pow(pDataXYZ[1],2) + pow(pDataXYZ[2],2)));
+    if(gyroBuf.full())
+    {
+        printf("%f %f %f %f %f\n", gyroBuf.max(), gyroBuf.mean(), gyroBuf.min(), gyroBuf.standardDev(), gyroBuf.avgDev());
+
+    }
+    gyroBuf.push(sqrt(pow(pDataXYZ[0],2) + pow(pDataXYZ[1],2) + pow(pDataXYZ[2],2)));
+>>>>>>> 2bc77424cc5c93209d85c413658bd93f1ac85767
 }
 
 
