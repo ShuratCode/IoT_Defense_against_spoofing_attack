@@ -88,22 +88,6 @@ void read_magnetometer(){
  * Read the data from the accelerometer and from the gyro
  */
 void read_gyro_accelerometer(){
-<<<<<<< HEAD
-    BSP_ACCELERO_AccGetXYZ(pDataXYZ);
-    BSP_GYRO_GetXYZ(pGyroDataXYZ);
-    //acceloBuf.push(sqrt(pow(pDataXYZ[0],2) + pow(pDataXYZ[1],2) + pow(pDataXYZ[2],2)));
-    //if(gyroBuf.full())
-    //{
-    //    printf("Max Mean Min StandardDev AvgDev \n %f %f %f %f %f", gyroBuf.max(), gyroBuf.mean(), gyroBuf.min(), gyroBuf.standardDev(), gyroBuf.avgDev());
-    //    exit(1);
-    //}
-    //else{
-    //    gyroBuf.push(sqrt(pow(pDataXYZ[0],2) + pow(pDataXYZ[1],2) + pow(pDataXYZ[2],2)));
-    //    printf("num of values: %u\n", gyroBuf.size());
-    //}
-
-    controlServo(pGyroDataXYZ);
-=======
     BSP_GYRO_GetXYZ(pGyroDataXYZ);
     controlServo(pGyroDataXYZ);
     //acceloBuf.push(sqrt(pow(pDataXYZ[0],2) + pow(pDataXYZ[1],2) + pow(pDataXYZ[2],2)));
@@ -113,7 +97,6 @@ void read_gyro_accelerometer(){
 
     }
     gyroBuf.push(sqrt(pow(pDataXYZ[0],2) + pow(pDataXYZ[1],2) + pow(pDataXYZ[2],2)));
->>>>>>> 2bc77424cc5c93209d85c413658bd93f1ac85767
 }
 
 
