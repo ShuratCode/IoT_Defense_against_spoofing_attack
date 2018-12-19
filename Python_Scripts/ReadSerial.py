@@ -29,7 +29,8 @@ if len(sys.argv) == 3:
             break
         line = s.readline()
         line = line.decode('utf-8')
-        lineList.append(line.split())
+        if line != '':
+            lineList.append(line.split())
     csv_writer.writerows(lineList)    
 else:
     print('The number of arguments needed to be 3, the script, the serial to listen to and the path for the csv file')

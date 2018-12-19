@@ -18,20 +18,20 @@ class MyCircularBuffer: public CircularBuffer<T, BufferSize, uint32_t>
     }
     ~MyCircularBuffer(){}
 
-    float standardDev(){
+    double standardDev(){
         Features f;
         return f.standardDev(CircularBuffer<T, BufferSize, uint32_t>::_pool, BufferSize);
     }
-    float avgDev(){
+    double avgDev(){
         Features f;
         return f.avgDev(CircularBuffer<T, BufferSize, uint32_t>::_pool, BufferSize);
     }
-    float mean(){
+    double mean(){
         Features f;
         return f.mean(CircularBuffer<T, BufferSize, uint32_t>::_pool, BufferSize);
     }
 
-    float max(){
+    double max(){
         float max = CircularBuffer<T, BufferSize, uint32_t>::_pool[0];
         for(int i = 1; i < BufferSize; i++)
         {
@@ -43,7 +43,7 @@ class MyCircularBuffer: public CircularBuffer<T, BufferSize, uint32_t>
         return max;
     }
 
-    float min(){
+    double min(){
         float min = CircularBuffer<T, BufferSize, uint32_t>::_pool[0];
         for(int i = 1; i < BufferSize; i++)
         {

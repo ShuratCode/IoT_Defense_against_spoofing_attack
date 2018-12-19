@@ -9,9 +9,9 @@ class Features
 { 
     public:
         Features(){};
-        float standardDev(float data[], int size);
-        float avgDev(float data[], int size);
-        float mean(float data[], int size);
+        double standardDev(double data[], int size);
+        double avgDev(double data[], int size);
+        double mean(double data[], int size);
 };
 
 

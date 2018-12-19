@@ -37,7 +37,7 @@ MyCircularBuffer<int16_t, BUFFER_SIZE> magnoBuf;
 MyCircularBuffer<int16_t, BUFFER_SIZE> acceloBuf;
 
 //gyro buffers
-MyCircularBuffer<float, BUFFER_SIZE> gyroBuf;
+MyCircularBuffer<double, BUFFER_SIZE> gyroBuf;
 
 //Configure PwmOut
 PwmOut _pwm(D0);

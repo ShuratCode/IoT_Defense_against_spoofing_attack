@@ -1,8 +1,8 @@
 #include "Features.h"
 
-float Features::standardDev(float data[], int size){
-    float avg = mean(data, size);
-    float sum = 0;
+double Features::standardDev(double data[], int size){
+    double avg = mean(data, size);
+    double sum = 0;
     for(int i = 0; i < size; i++)
     {
         sum += pow(data[i]-avg, 2);
@@ -10,9 +10,9 @@ float Features::standardDev(float data[], int size){
     return sqrt(sum/size);
 }
 
-float Features::avgDev(float data[], int size){
-    float avg = mean(data, size);
-    float sum = 0;
+double Features::avgDev(double data[], int size){
+    double avg = mean(data, size);
+    double sum = 0;
     for(int i = 0; i < size; i++)
     {
         sum += abs(data[i]-avg);
@@ -20,8 +20,8 @@ float Features::avgDev(float data[], int size){
     return sum/size;
 }
 
-float Features::mean(float data[], int size){
-    float sum = 0;
+double Features::mean(double data[], int size){
+    double sum = 0;
     for(int i = 0; i < size; i++)
     {
         sum += data[i];
