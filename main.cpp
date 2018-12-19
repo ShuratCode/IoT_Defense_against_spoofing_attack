@@ -16,7 +16,7 @@ using namespace std;
 DigitalOut led(LED1);
 
 /* Defines */
-#define BUFFER_SIZE 521
+#define BUFFER_SIZE 400
 
 
 /*Declaration */
@@ -48,15 +48,15 @@ PwmOut _pwm(D0);
 int main() {
 
     //Initiate the sensors
-    BSP_MAGNETO_Init();
+    //BSP_MAGNETO_Init();
     BSP_GYRO_Init();
-    BSP_ACCELERO_Init();
+    //BSP_ACCELERO_Init();
 
     //Configure eventqueue 
     EventQueue queue;
-    queue.call_every(2000, checkData);
-    queue.call_every(25, read_magnetometer);
-    queue.call_every(80, read_gyro_accelerometer);
+    //queue.call_every(2000, checkData);
+    //queue.call_every(25, read_magnetometer);
+    queue.call_every(20, read_gyro_accelerometer);
     queue.dispatch(-1);
 }
 
@@ -91,12 +91,14 @@ void read_gyro_accelerometer(){
     BSP_GYRO_GetXYZ(pGyroDataXYZ);
     controlServo(pGyroDataXYZ);
     //acceloBuf.push(sqrt(pow(pDataXYZ[0],2) + pow(pDataXYZ[1],2) + pow(pDataXYZ[2],2)));
+
     if(gyroBuf.full())
     {
         printf("%f %f %f %f %f\n", gyroBuf.max(), gyroBuf.mean(), gyroBuf.min(), gyroBuf.standardDev(), gyroBuf.avgDev());
-
+        gyroBuf.reset();
     }
-    gyroBuf.push(sqrt(pow(pDataXYZ[0],2) + pow(pDataXYZ[1],2) + pow(pDataXYZ[2],2)));
+    gyroBuf.push(sqrt(pow(pGyroDataXYZ[0],2) + pow(pGyroDataXYZ[1],2) + pow(pGyroDataXYZ[2],2)));
+
 }
 
 
