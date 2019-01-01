@@ -16,7 +16,7 @@ using namespace std;
 DigitalOut led(LED1);
 
 /* Defines */
-#define BUFFER_SIZE 400
+#define BUFFER_SIZE 200
 
 
 /*Declaration */
@@ -56,7 +56,7 @@ int main() {
     EventQueue queue;
     //queue.call_every(2000, checkData);
     //queue.call_every(25, read_magnetometer);
-    queue.call_every(20, read_gyro_accelerometer);
+    queue.call_every(5, read_gyro_accelerometer);
     queue.dispatch(-1);
 }
 
