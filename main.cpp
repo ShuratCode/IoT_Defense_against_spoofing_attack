@@ -20,9 +20,10 @@ void sensorFusionDataAndDefence();
 void singleSensorDefence(double max, double min, double standardDev);
 void read_gyro_and_magnetometer();
 void read_gyro(bool collectData);
+double calculateLR(float pGyroDataXYZ[3]);
 void controlServo(float pGyroDataXYZ[3]);
 void sensorFusionAlgorithm(double gyroMax, double gyroMean, double gyroMin, double gyroStandardDev, double gyroAvgDev, double magnetometerMax, double magnetometerMean, double magnetometerMin, double magnetometerStandardDev, double magnetometerAvgDev);
-double computeMSE(float gyroX, float gyroY, float gyroZ, int16_t magnoX, int16_t magnoY, int16_t magnoZ);
+double computeMSE(float pGyroDataXYZ[3], int16_t pDataXYZ[3]);
 
 /* Global Variables Declaration */
 int16_t pDataXYZ[3] = {0};
@@ -91,7 +92,19 @@ void read_gyro(bool collectData){
     }
 
     // Get data from the gyroscope, normalize and push it to the buffer 
-    gyroBuf.push(sqrt(pow(pGyroDataXYZ[0],2) + pow(pGyroDataXYZ[1],2) + pow(pGyroDataXYZ[2],2)));
+    gyroBuf.push(calculateLR(pGyroDataXYZ));
+}
+
+/**
+ * Will calculate the LR for the single sensor defence. 
+ * @param pGyroDataXYZ array of readings from the gyroscop
+ */ 
+double calculateLR(float pGyroDataXYZ[3]){
+    double xPow = pow(pGyroDataXYZ[0], 2);
+    double yPow = pow(pGyroDataXYZ[1], 2);
+    double zPow = pow(pGyroDataXYZ[2], 2);
+    double lr = sqrt(xPow + yPow + zPow);
+    return lr;
 }
 
 /**
@@ -138,7 +151,7 @@ void read_gyro_and_magnetometer(){
         double mseStandardDev = mseBuf.standardDev();
         double mseAvgDev = mseBuf.avgDev();
     }
-    double mse = computeMSE(pGyroDataXYZ[0], pGyroDataXYZ[1], pGyroDataXYZ[2], pDataXYZ[0], pDataXYZ[1], pDataXYZ[2]);
+    double mse = computeMSE(pGyroDataXYZ, pDataXYZ);
     printf("%f \n", mse);
     mseBuf.push(mse);
 }
@@ -146,8 +159,8 @@ void read_gyro_and_magnetometer(){
 /**
  * Compute the MSE between the readings of the gyroscope and the magnetometer
  */
-double computeMSE(float gyroX, float gyroY, float gyroZ, int16_t magnoX, int16_t magnoY, int16_t magnoZ){
-    return pow(gyroX - magnoX, 2) + pow(gyroY - magnoY, 2) + pow(gyroZ - magnoZ, 2);
+double computeMSE(float pGyroDataXYZ[3], int16_t pDataXYZ[3]){
+    return pow(pGyroDataXYZ[0] - pDataXYZ[0], 2) + pow(pGyroDataXYZ[1] - pDataXYZ[1], 2) + pow(pGyroDataXYZ[2] - pDataXYZ[2], 2);
 }
 
 
