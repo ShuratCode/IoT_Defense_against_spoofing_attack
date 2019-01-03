@@ -23,8 +23,10 @@ void read_gyro(bool collectData);
 double calculateLR(float pGyroDataXYZ[3]);
 void controlServo(float pGyroDataXYZ[3]);
 void sensorFusionAlgorithm(double gyroMax, double gyroMean, double gyroMin, double gyroStandardDev, double gyroAvgDev, double magnetometerMax, double magnetometerMean, double magnetometerMin, double magnetometerStandardDev, double magnetometerAvgDev);
-double computeMSE(float pGyroDataXYZ[3], int16_t pDataXYZ[3]);
+double calculateLR(float pGyroDataXYZ[3]);
+double computeMSE(double* zeta, double* eta);
 double* calculateTimeDiffMagnetometer(int16_t pDataXYZ[3]);
+double* calculateOmegaCrossB(float pGyroDataXYZ[3], int16_t pDataXYZ[3]);
 
 /* Global Variables Declaration */
 int16_t pDataXYZ[3] = {0};
@@ -38,9 +40,6 @@ MyCircularBuffer<double, BUFFER_SIZE> gyroBuf;
 
 // Magno buffers
 MyCircularBuffer<int16_t*, BUFFER_SIZE> magnoBuf;
-
-// MSE buffers
-MyCircularBuffer<double, BUFFER_SIZE> mseBuf;
 
 // Configure PwmOut
 PwmOut _pwm(D0);
@@ -76,7 +75,7 @@ void read_gyro(bool collectData){
     BSP_GYRO_GetXYZ(pGyroDataXYZ);
     controlServo(pGyroDataXYZ);
 
-    // Collect featurs when the buffer is full, print them and reset the buffer
+    // Collect features when the buffer is full, print them and reset the buffer
     if(gyroBuf.full())
     {
         double gyroMax = gyroBuf.max();
@@ -143,26 +142,30 @@ void read_gyro_and_magnetometer(){
     BSP_GYRO_GetXYZ(pGyroDataXYZ);
     controlServo(pGyroDataXYZ);
 
-    // Get data from the megnetometer
+    // Get data from the magnetometer
     BSP_MAGNETO_GetXYZ(pDataXYZ);
 
     // Compute the features when the mse buffer is full
-    if(mseBuf.full())
+    /*if(mseBuf.full())
     {
         double mseMax = mseBuf.max();
         double mseMean = mseBuf.mean();
         double mseMin = mseBuf.min();
         double mseStandardDev = mseBuf.standardDev();
         double mseAvgDev = mseBuf.avgDev();
+    }*/
+    if(!magnoBuf.empty()){
+        double* omegaCrossB = calculateOmegaCrossB(pGyroDataXYZ, pDataXYZ);
+        double* timeDiffMagnetometer = calculateTimeDiffMagnetometer(pDataXYZ);
+        double mse = computeMSE(omegaCrossB, timeDiffMagnetometer);
+        printf("%f \n", mse);
+        delete [] omegaCrossB;
+        delete [] timeDiffMagnetometer;
     }
     magnoBuf.push(pDataXYZ);
-    if(!mseBuf.empty()){
-        //double mse = computeMSE(calculateOmegaCrossB(pGyroDataXYZ), calculateTimeDiffMagnetometer(pDataXYZ));
-        //printf("%f \n", mse);
-       // mseBuf.push(mse);
-    }
 }
 
+//TODO add comment
 double* calculateTimeDiffMagnetometer(int16_t pDataXYZ[3]){
     double* result = new double[3];
     int16_t* lastMagno;
@@ -170,6 +173,25 @@ double* calculateTimeDiffMagnetometer(int16_t pDataXYZ[3]){
     result[0] = (pDataXYZ[0] - lastMagno[0]) / 5;
     result[1] = (pDataXYZ[1] - lastMagno[1]) / 5;
     result[2] = (pDataXYZ[2] - lastMagno[2]) / 5;
+    return result;
+}
+
+//TODO add comment
+double* calculateOmegaCrossB(float pGyroDataXYZ[3], int16_t pDataXYZ[3]){
+    float gyroX = pGyroDataXYZ[0];
+    float gyroY = pGyroDataXYZ[1];
+    float gyroZ = pGyroDataXYZ[2];
+    int16_t magX = pDataXYZ[0];
+    int16_t magY = pDataXYZ[1];
+    int16_t magZ = pDataXYZ[2];
+
+    double cx = -gyroX * magZ + gyroZ * magY;
+    double cy = -gyroZ * magX + gyroX * magZ;
+    double cz = -gyroX * magY + gyroY * magX;
+    double* result = new double[3];
+    result[0] = cx;
+    result[1] = cy;
+    result[2]= cz;
     return result;
 }
 
@@ -183,6 +205,11 @@ double computeMSE(double* zeta, double* eta){
 
 /**
  * Implementation of sensor fusion algorithm
+ * @param gyroMax the maximum feature calculated from the gyro 
+ * @param gyroMean the mean feature calculated from the gyro
+ * @param gyroMin the min feature calculated form the gyro
+ * @param gyroStandardDev the std feature calculated from the gyro
+ * @param 
  */
 void sensorFusionAlgorithm(double gyroMax, double gyroMean, double gyroMin, double gyroStandardDev, double gyroAvgDev, double magnetometerMax, double magnetometerMean, double magnetometerMin, double magnetometerStandardDev, double magnetometerAvgDev){
     //TODO complete
