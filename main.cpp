@@ -22,6 +22,8 @@ void read_gyro_and_magnetometer();
 void read_gyro(bool collectData);
 void controlServo(float pGyroDataXYZ[3]);
 void sensorFusionAlgorithm(double gyroMax, double gyroMean, double gyroMin, double gyroStandardDev, double gyroAvgDev, double magnetometerMax, double magnetometerMean, double magnetometerMin, double magnetometerStandardDev, double magnetometerAvgDev);
+double calculateLR(float pGyroDataXYZ[3]);
+
 
 /* Global Variables Declaration */
 int16_t pDataXYZ[3] = {0};
@@ -90,7 +92,19 @@ void read_gyro(bool collectData){
     }
 
     // Get data from the gyroscope, normalize and push it to the buffer 
-    gyroBuf.push(sqrt(pow(pGyroDataXYZ[0],2) + pow(pGyroDataXYZ[1],2) + pow(pGyroDataXYZ[2],2)));
+    gyroBuf.push(calculateLR(pGyroDataXYZ));
+}
+
+/**
+ * Will calculate the LR for the single sensor defence. 
+ * @param pGyroDataXYZ array of readings from the gyroscop
+ */ 
+double calculateLR(float pGyroDataXYZ[3]){
+    double xPow = pow(pGyroDataXYZ[0], 2);
+    double yPow = pow(pGyroDataXYZ[1], 2);
+    double zPow = pow(pGyroDataXYZ[2], 2);
+    double lr = sqrt(xPow + yPow + zPow);
+    return lr;
 }
 
 /**
@@ -128,9 +142,8 @@ void read_gyro_and_magnetometer(){
     // Get data from the magnetometer
     BSP_MAGNETO_GetXYZ(pDataXYZ);
 
-    // TODO ask Kevin if we need to calculate features or just compare readings?
-    // Collect featurs when the buffers are full, call the sensor fusion algorithm and reset the buffers
-    /*if(gyroBuf.full() && magnoBuf.full())
+    // Collect features when the buffers are full, call the sensor fusion algorithm and reset the buffers
+    if(gyroBuf.full() && magnoBuf.full())
     {
         double gyroMax = gyroBuf.max();
         double gyroMean = gyroBuf.mean();
@@ -151,12 +164,17 @@ void read_gyro_and_magnetometer(){
 
     // Get data from the sensors, normalize and push it to the buffers 
     gyroBuf.push(sqrt(pow(pGyroDataXYZ[0],2) + pow(pGyroDataXYZ[1],2) + pow(pGyroDataXYZ[2],2)));
-    magnoBuf.push(sqrt(pow(pDataXYZ[0],2) + pow(pDataXYZ[1],2) + pow(pDataXYZ[2],2)));*/
+    magnoBuf.push(sqrt(pow(pDataXYZ[0],2) + pow(pDataXYZ[1],2) + pow(pDataXYZ[2],2)));
 
 }
 
 /**
  * Implementation of sensor fusion algorithm
+ * @param gyroMax the maximum feature calculated from the gyro 
+ * @param gyroMean the mean feature calculated from the gyro
+ * @param gyroMin the min feature calculated form the gyro
+ * @param gyroStandardDev the std feature calculated from the gyro
+ * @param 
  */
 void sensorFusionAlgorithm(double gyroMax, double gyroMean, double gyroMin, double gyroStandardDev, double gyroAvgDev, double magnetometerMax, double magnetometerMean, double magnetometerMin, double magnetometerStandardDev, double magnetometerAvgDev){
     //TODO complete
