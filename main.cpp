@@ -25,6 +25,7 @@ void controlServo(float pGyroDataXYZ[3]);
 void sensorFusionAlgorithm(double gyroMax, double gyroMean, double gyroMin, double gyroStandardDev, double gyroAvgDev, double magnetometerMax, double magnetometerMean, double magnetometerMin, double magnetometerStandardDev, double magnetometerAvgDev);
 double calculateLR(float pGyroDataXYZ[3]);
 double computeMSE(float pGyroDataXYZ[3], int16_t pDataXYZ[3]);
+double* calculateOmegaCrossB(float pGyroDataXYZ[3], int16_t pDataXYZ[3]);
 
 /* Global Variables Declaration */
 int16_t pDataXYZ[3] = {0};
@@ -208,4 +209,22 @@ void singleSensorDefence(double max, double min, double standardDev){
     {
         led = 0;
     }
+}
+
+double* calculateOmegaCrossB(float pGyroDataXYZ[3], int16_t pDataXYZ[3]){
+    float gyroX = pGyroDataXYZ[0];
+    float gyroY = pGyroDataXYZ[1];
+    float gyroZ = pGyroDataXYZ[2];
+    int16_t magX = pDataXYZ[0];
+    int16_t magY = pDataXYZ[1];
+    int16_t magZ = pDataXYZ[2];
+
+    double cx = -gyroX * magZ + gyroZ * magY;
+    double cy = -gyroZ * magX + gyroX * magZ;
+    double cz = -gyroX * magY + gyroY * magX;
+    double* result = new double[3];
+    result[0] = cx;
+    result[1] = cy;
+    result[2]= cz;
+    return result;
 }
