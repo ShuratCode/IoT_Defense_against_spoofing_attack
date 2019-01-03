@@ -130,7 +130,7 @@ void sensorFusionDataAndDefence(){
 
     //Configure eventqueue 
     EventQueue queue;
-    queue.call_every(5, read_gyro_and_magnetometer);
+    queue.call_every(10, read_gyro_and_magnetometer);
     queue.dispatch(-1);
 }
 
