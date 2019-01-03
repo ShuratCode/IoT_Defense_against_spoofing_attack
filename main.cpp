@@ -24,6 +24,7 @@ double calculateLR(float pGyroDataXYZ[3]);
 void controlServo(float pGyroDataXYZ[3]);
 void sensorFusionAlgorithm(double gyroMax, double gyroMean, double gyroMin, double gyroStandardDev, double gyroAvgDev, double magnetometerMax, double magnetometerMean, double magnetometerMin, double magnetometerStandardDev, double magnetometerAvgDev);
 double computeMSE(float pGyroDataXYZ[3], int16_t pDataXYZ[3]);
+double* calculateTimeDiffMagnetometer(int16_t pDataXYZ[3]);
 
 /* Global Variables Declaration */
 int16_t pDataXYZ[3] = {0};
@@ -34,6 +35,9 @@ DigitalOut led(LED1);
 
 // Gyro buffers
 MyCircularBuffer<double, BUFFER_SIZE> gyroBuf;
+
+// Magno buffers
+MyCircularBuffer<int16_t*, BUFFER_SIZE> magnoBuf;
 
 // MSE buffers
 MyCircularBuffer<double, BUFFER_SIZE> mseBuf;
@@ -151,16 +155,29 @@ void read_gyro_and_magnetometer(){
         double mseStandardDev = mseBuf.standardDev();
         double mseAvgDev = mseBuf.avgDev();
     }
-    double mse = computeMSE(pGyroDataXYZ, pDataXYZ);
-    printf("%f \n", mse);
-    mseBuf.push(mse);
+    magnoBuf.push(pDataXYZ);
+    if(!mseBuf.empty()){
+        //double mse = computeMSE(calculateOmegaCrossB(pGyroDataXYZ), calculateTimeDiffMagnetometer(pDataXYZ));
+        //printf("%f \n", mse);
+       // mseBuf.push(mse);
+    }
+}
+
+double* calculateTimeDiffMagnetometer(int16_t pDataXYZ[3]){
+    double* result = new double[3];
+    int16_t* lastMagno;
+    magnoBuf.peek(lastMagno);
+    result[0] = (pDataXYZ[0] - lastMagno[0]) / 5;
+    result[1] = (pDataXYZ[1] - lastMagno[1]) / 5;
+    result[2] = (pDataXYZ[2] - lastMagno[2]) / 5;
+    return result;
 }
 
 /**
  * Compute the MSE between the readings of the gyroscope and the magnetometer
  */
-double computeMSE(float pGyroDataXYZ[3], int16_t pDataXYZ[3]){
-    return pow(pGyroDataXYZ[0] - pDataXYZ[0], 2) + pow(pGyroDataXYZ[1] - pDataXYZ[1], 2) + pow(pGyroDataXYZ[2] - pDataXYZ[2], 2);
+double computeMSE(double* zeta, double* eta){
+    return pow(zeta[0] - eta[0], 2) + pow(zeta[1] - eta[1], 2) + pow(zeta[2] - eta[2], 2);
 }
 
 
