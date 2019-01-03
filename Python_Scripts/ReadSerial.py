@@ -19,6 +19,7 @@ if len(sys.argv) == 3:
 
     csv_file = open(file, 'w', newline='')
     csv_writer = csv.writer(csv_file)
+    # title = "Max Mean Min StandardDev AvgDev"
     title = "MSE"
     lineList = [title.split()]
     timeout = time.time() + 60*5
