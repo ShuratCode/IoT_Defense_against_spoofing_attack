@@ -70,7 +70,7 @@ void read_gyro(){
     BSP_GYRO_GetXYZ(pGyroDataXYZ);
     controlServo(pGyroDataXYZ);
 
-    // Collect featurs when the buffer is full, print them and reset the buffer
+    // Collect features when the buffer is full, print them and reset the buffer
     if(gyroBuf.full())
     {
         printf("%f %f %f %f %f\n", gyroBuf.max(), gyroBuf.mean(), gyroBuf.min(), gyroBuf.standardDev(), gyroBuf.avgDev());
@@ -113,11 +113,11 @@ void read_gyro_and_magnetometer(){
     BSP_GYRO_GetXYZ(pGyroDataXYZ);
     controlServo(pGyroDataXYZ);
 
-    // Get data from the megnetometer
+    // Get data from the magnetometer
     BSP_MAGNETO_GetXYZ(pDataXYZ);
 
     // TODO ask Kevin if we need to calculate features or just compare readings?
-    // Collect featurs when the buffers are full, call the sensor fusion algorithm and reset the buffers
+    // Collect feature when the buffers are full, call the sensor fusion algorithm and reset the buffers
     if(gyroBuf.full() && magnoBuf.full())
     {
         float gyroMax = gyroBuf.max();
