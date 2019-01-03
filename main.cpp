@@ -15,13 +15,13 @@ using namespace std;
 #define BUFFER_SIZE 200
 
 /* Functions Declaration */
-void read_gyro_and_magnetometer();
-void read_gyro();
-void controlServo(float pGyroDataXYZ[3]);
-void singleSensorData();
+void singleSensor(bool collectData);
 void sensorFusionDataAndDefence();
-void singleSensorDefence();
-void sensorFusionAlgorithm(int gyroMax, int gyroMean, int gyroMin, int gyroStandardDev, int gyroAvgDev, int magnetometerMax, int magnetometerMean, int magnetometerMin, int magnetometerStandardDev, int magnetometerAvgDev){
+void singleSensorDefence(double max, double min, double standardDev);
+void read_gyro_and_magnetometer();
+void read_gyro(bool collectData);
+void controlServo(float pGyroDataXYZ[3]);
+void sensorFusionAlgorithm(double gyroMax, double gyroMean, double gyroMin, double gyroStandardDev, double gyroAvgDev, double magnetometerMax, double magnetometerMean, double magnetometerMin, double magnetometerStandardDev, double magnetometerAvgDev);
 
 /* Global Variables Declaration */
 int16_t pDataXYZ[3] = {0};
@@ -44,28 +44,28 @@ PwmOut _pwm(D0);
  */
 int main() {
     // TODO - check the button that change between the modes
-    singleSensorData();
-    sensorFusionDataAndDefence();
-    singleSensorDefence();
+    bool collectData = false;
+    singleSensor(collectData);
+    //sensorFusionDataAndDefence();
 }
 
 /**
  * Initiate the gyroscope and configure eventqueue that call the function that collects the gyroscope data
  */
-void singleSensorData(){
+void singleSensor(bool collectData){
     //Initiate the gyroscope
     BSP_GYRO_Init();
 
     //Configure eventqueue 
     EventQueue queue;
-    queue.call_every(5, read_gyro);
+    queue.call_every(5, read_gyro, collectData);
     queue.dispatch(-1);
 }
 
 /**
  * Read the data from the gyroscope and print the features
  */
-void read_gyro(){
+void read_gyro(bool collectData){
     // Get data from the gyroscope and pass it to the servo
     BSP_GYRO_GetXYZ(pGyroDataXYZ);
     controlServo(pGyroDataXYZ);
@@ -73,7 +73,19 @@ void read_gyro(){
     // Collect features when the buffer is full, print them and reset the buffer
     if(gyroBuf.full())
     {
-        printf("%f %f %f %f %f\n", gyroBuf.max(), gyroBuf.mean(), gyroBuf.min(), gyroBuf.standardDev(), gyroBuf.avgDev());
+        double gyroMax = gyroBuf.max();
+        double gyroMean = gyroBuf.mean();
+        double gyroMin = gyroBuf.min();
+        double gyroStandardDev = gyroBuf.standardDev();
+        double gyroAvgDev = gyroBuf.avgDev();
+        if(collectData){
+            printf("%f %f %f %f %f\n", gyroMax, gyroMean, gyroMin, gyroStandardDev, gyroAvgDev);
+        }
+        else{
+        double gyroMin = gyroBuf.min();
+            singleSensorDefence(gyroMax, gyroMin, gyroStandardDev);
+            //singleSensorDefence(247405, 4590.2, 63222.5);
+        }
         gyroBuf.reset();
     }
 
@@ -117,19 +129,19 @@ void read_gyro_and_magnetometer(){
     BSP_MAGNETO_GetXYZ(pDataXYZ);
 
     // TODO ask Kevin if we need to calculate features or just compare readings?
-    // Collect feature when the buffers are full, call the sensor fusion algorithm and reset the buffers
-    if(gyroBuf.full() && magnoBuf.full())
+    // Collect featurs when the buffers are full, call the sensor fusion algorithm and reset the buffers
+    /*if(gyroBuf.full() && magnoBuf.full())
     {
-        float gyroMax = gyroBuf.max();
-        float gyroMean = gyroBuf.mean();
-        float gyroMin = gyroBuf.min();
-        float gyroStandardDev = gyroBuf.standardDev();
-        float gyroAvgDev = gyroBuf.avgDev();
-        float magnetometerMax = magnoBuf.max();
-        float magnetometerMean = magnoBuf.mean();
-        float magnetometerMin = magnoBuf.min();
-        float magnetometerStandardDev = magnoBuf.standardDev();
-        float magnetometerAvgDev = magnoBuf.avgDev();
+        double gyroMax = gyroBuf.max();
+        double gyroMean = gyroBuf.mean();
+        double gyroMin = gyroBuf.min();
+        double gyroStandardDev = gyroBuf.standardDev();
+        double gyroAvgDev = gyroBuf.avgDev();
+        double magnetometerMax = magnoBuf.max();
+        double magnetometerMean = magnoBuf.mean();
+        double magnetometerMin = magnoBuf.min();
+        double magnetometerStandardDev = magnoBuf.standardDev();
+        double magnetometerAvgDev = magnoBuf.avgDev();
 
         sensorFusionAlgorithm(gyroMax, gyroMean, gyroMin, gyroStandardDev, gyroAvgDev, magnetometerMax, magnetometerMean, magnetometerMin, magnetometerStandardDev, magnetometerAvgDev);
         
@@ -139,14 +151,14 @@ void read_gyro_and_magnetometer(){
 
     // Get data from the sensors, normalize and push it to the buffers 
     gyroBuf.push(sqrt(pow(pGyroDataXYZ[0],2) + pow(pGyroDataXYZ[1],2) + pow(pGyroDataXYZ[2],2)));
-    magnoBuf.push(sqrt(pow(pDataXYZ[0],2) + pow(pDataXYZ[1],2) + pow(pDataXYZ[2],2)));
+    magnoBuf.push(sqrt(pow(pDataXYZ[0],2) + pow(pDataXYZ[1],2) + pow(pDataXYZ[2],2)));*/
 
 }
 
 /**
  * Implementation of sensor fusion algorithm
  */
-void sensorFusionAlgorithm(int gyroMax, int gyroMean, int gyroMin, int gyroStandardDev, int gyroAvgDev, int magnetometerMax, int magnetometerMean, int magnetometerMin, int magnetometerStandardDev, int magnetometerAvgDev){
+void sensorFusionAlgorithm(double gyroMax, double gyroMean, double gyroMin, double gyroStandardDev, double gyroAvgDev, double magnetometerMax, double magnetometerMean, double magnetometerMin, double magnetometerStandardDev, double magnetometerAvgDev){
     //TODO complete
 }
 
@@ -158,25 +170,28 @@ void sensorFusionAlgorithm(int gyroMax, int gyroMean, int gyroMin, int gyroStand
  * @param standardDev the standard deviation of the gyro readings
  * @return 1 if there is an attack and 0 if not
  */
-int decisionTree(double max, double min, double standardDev)
+void singleSensorDefence(double max, double min, double standardDev)
 {
+    printf("max %f min %f std %f \n", max, min, standardDev);
     if (max < 247406)
     {
         if (min < 4590.13)
         {
-            return 0;
+            led = 0;
         }
-        else if (standardDev < 63222.4)
-        {
-            return 1;
-        }
-        else
-        {
-            return 0;
+        else{
+            if (standardDev < 63222.4)
+            {
+                led = 1;
+            }
+            else
+            {
+                led = 0;
+            }
         }
     }
     else
     {
-        return 0;
+        led = 0;
     }
 }
