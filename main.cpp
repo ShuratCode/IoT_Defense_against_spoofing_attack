@@ -20,10 +20,11 @@ void sensorFusionDataAndDefence();
 void singleSensorDefence(double max, double min, double standardDev);
 void read_gyro_and_magnetometer();
 void read_gyro(bool collectData);
+double calculateLR(float pGyroDataXYZ[3]);
 void controlServo(float pGyroDataXYZ[3]);
 void sensorFusionAlgorithm(double gyroMax, double gyroMean, double gyroMin, double gyroStandardDev, double gyroAvgDev, double magnetometerMax, double magnetometerMean, double magnetometerMin, double magnetometerStandardDev, double magnetometerAvgDev);
 double calculateLR(float pGyroDataXYZ[3]);
-
+double computeMSE(float pGyroDataXYZ[3], int16_t pDataXYZ[3]);
 
 /* Global Variables Declaration */
 int16_t pDataXYZ[3] = {0};
@@ -31,12 +32,12 @@ float pGyroDataXYZ[3] = {0};
 
 // Led
 DigitalOut led(LED1);
-    
-// Magnetometer buffer
-MyCircularBuffer<int16_t, BUFFER_SIZE> magnoBuf;
 
 // Gyro buffers
 MyCircularBuffer<double, BUFFER_SIZE> gyroBuf;
+
+// MSE buffers
+MyCircularBuffer<double, BUFFER_SIZE> mseBuf;
 
 // Configure PwmOut
 PwmOut _pwm(D0);
@@ -47,8 +48,8 @@ PwmOut _pwm(D0);
 int main() {
     // TODO - check the button that change between the modes
     bool collectData = false;
-    singleSensor(collectData);
-    //sensorFusionDataAndDefence();
+    //singleSensor(collectData);
+    sensorFusionDataAndDefence();
 }
 
 /**
@@ -142,31 +143,27 @@ void read_gyro_and_magnetometer(){
     // Get data from the magnetometer
     BSP_MAGNETO_GetXYZ(pDataXYZ);
 
-    // Collect features when the buffers are full, call the sensor fusion algorithm and reset the buffers
-    if(gyroBuf.full() && magnoBuf.full())
+    // Compute the features when the mse buffer is full
+    if(mseBuf.full())
     {
-        double gyroMax = gyroBuf.max();
-        double gyroMean = gyroBuf.mean();
-        double gyroMin = gyroBuf.min();
-        double gyroStandardDev = gyroBuf.standardDev();
-        double gyroAvgDev = gyroBuf.avgDev();
-        double magnetometerMax = magnoBuf.max();
-        double magnetometerMean = magnoBuf.mean();
-        double magnetometerMin = magnoBuf.min();
-        double magnetometerStandardDev = magnoBuf.standardDev();
-        double magnetometerAvgDev = magnoBuf.avgDev();
-
-        sensorFusionAlgorithm(gyroMax, gyroMean, gyroMin, gyroStandardDev, gyroAvgDev, magnetometerMax, magnetometerMean, magnetometerMin, magnetometerStandardDev, magnetometerAvgDev);
-        
-        gyroBuf.reset();
-        magnoBuf.reset();
+        double mseMax = mseBuf.max();
+        double mseMean = mseBuf.mean();
+        double mseMin = mseBuf.min();
+        double mseStandardDev = mseBuf.standardDev();
+        double mseAvgDev = mseBuf.avgDev();
     }
-
-    // Get data from the sensors, normalize and push it to the buffers 
-    gyroBuf.push(sqrt(pow(pGyroDataXYZ[0],2) + pow(pGyroDataXYZ[1],2) + pow(pGyroDataXYZ[2],2)));
-    magnoBuf.push(sqrt(pow(pDataXYZ[0],2) + pow(pDataXYZ[1],2) + pow(pDataXYZ[2],2)));
-
+    double mse = computeMSE(pGyroDataXYZ, pDataXYZ);
+    printf("%f \n", mse);
+    mseBuf.push(mse);
 }
+
+/**
+ * Compute the MSE between the readings of the gyroscope and the magnetometer
+ */
+double computeMSE(float pGyroDataXYZ[3], int16_t pDataXYZ[3]){
+    return pow(pGyroDataXYZ[0] - pDataXYZ[0], 2) + pow(pGyroDataXYZ[1] - pDataXYZ[1], 2) + pow(pGyroDataXYZ[2] - pDataXYZ[2], 2);
+}
+
 
 /**
  * Implementation of sensor fusion algorithm
@@ -188,9 +185,7 @@ void sensorFusionAlgorithm(double gyroMax, double gyroMean, double gyroMin, doub
  * @param standardDev the standard deviation of the gyro readings
  * @return 1 if there is an attack and 0 if not
  */
-void singleSensorDefence(double max, double min, double standardDev)
-{
-    printf("max %f min %f std %f \n", max, min, standardDev);
+void singleSensorDefence(double max, double min, double standardDev){
     if (max < 247406)
     {
         if (min < 4590.13)
@@ -200,6 +195,7 @@ void singleSensorDefence(double max, double min, double standardDev)
         else{
             if (standardDev < 63222.4)
             {
+                printf("Under attack \n");
                 led = 1;
             }
             else
