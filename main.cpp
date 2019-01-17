@@ -50,8 +50,8 @@ PwmOut _pwm(D0);
 int main() {
     // TODO - check the button that change between the modes
     bool collectData = false;
-    //singleSensor(collectData);
-    sensorFusionDataAndDefence();
+    singleSensor(collectData);
+    //sensorFusionDataAndDefence();
 }
 
 /**
@@ -87,7 +87,6 @@ void read_gyro(bool collectData){
             printf("%f %f %f %f %f\n", gyroMax, gyroMean, gyroMin, gyroStandardDev, gyroAvgDev);
         }
         else{
-        double gyroMin = gyroBuf.min();
             singleSensorDefence(gyroMax, gyroMin, gyroStandardDev);
             //singleSensorDefence(247405, 4590.2, 63222.5);
         }
@@ -235,22 +234,25 @@ void singleSensorDefence(double max, double min, double standardDev){
     {
         if (min < 4590.13)
         {
+            printf("No attack\n");
             led = 0;
         }
         else{
             if (standardDev < 63222.4)
             {
-                printf("Under attack \n");
+                printf("Under attack\n");
                 led = 1;
             }
             else
             {
+            printf("No attack\n");
                 led = 0;
             }
         }
     }
     else
     {
+        printf("No attack\n");
         led = 0;
     }
 }
