@@ -50,8 +50,8 @@ PwmOut _pwm(D0);
 int main() {
     // TODO - check the button that change between the modes
     bool collectData = false;
-    singleSensor(collectData);
-    //sensorFusionDataAndDefence();
+    //singleSensor(collectData);
+    sensorFusionDataAndDefence();
 }
 
 /**
