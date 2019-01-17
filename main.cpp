@@ -157,7 +157,14 @@ void read_gyro_and_magnetometer(){
         double* omegaCrossB = calculateOmegaCrossB(pGyroDataXYZ, pDataXYZ);
         double* timeDiffMagnetometer = calculateTimeDiffMagnetometer(pDataXYZ);
         double mse = computeMSE(omegaCrossB, timeDiffMagnetometer);
-        printf("%f \n", mse);
+        //printf("%f \n", mse);
+        if (mse >= 71350000000000000){
+            printf("Under Attack\n");
+            led = 1;
+        }
+        else{
+            led = 0;
+        }
         delete [] omegaCrossB;
         delete [] timeDiffMagnetometer;
     }
