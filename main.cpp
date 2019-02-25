@@ -27,13 +27,16 @@ double calculateLR(float pGyroDataXYZ[3]);
 double computeMSE(double* zeta, double* eta);
 double* calculateTimeDiffMagnetometer(int16_t pDataXYZ[3]);
 double* calculateOmegaCrossB(float pGyroDataXYZ[3], int16_t pDataXYZ[3]);
+void flip();
 
 /* Global Variables Declaration */
 int16_t pDataXYZ[3] = {0};
 float pGyroDataXYZ[3] = {0};
 
-// Led
+// Leds and button
 DigitalOut led(LED1);
+DigitalOut flash(LED4);
+InterruptIn btn(USER_BUTTON);
 
 // Gyro buffers
 MyCircularBuffer<double, BUFFER_SIZE> gyroBuf;
@@ -48,10 +51,15 @@ PwmOut _pwm(D0);
  * Main function
  */
 int main() {
+    btn.rise(&flip);
     // TODO - check the button that change between the modes
     bool collectData = false;
-    //singleSensor(collectData);
-    sensorFusionDataAndDefence();
+    singleSensor(collectData);
+    //sensorFusionDataAndDefence();
+}
+
+void flip() {
+    led = !led;
 }
 
 /**
@@ -76,7 +84,7 @@ void read_gyro(bool collectData){
     controlServo(pGyroDataXYZ);
 
     // Collect features when the buffer is full, print them and reset the buffer
-    if(gyroBuf.full())
+    /*if(gyroBuf.full())
     {
         double gyroMax = gyroBuf.max();
         double gyroMean = gyroBuf.mean();
@@ -94,7 +102,7 @@ void read_gyro(bool collectData){
     }
 
     // Get data from the gyroscope, normalize and push it to the buffer 
-    gyroBuf.push(calculateLR(pGyroDataXYZ));
+    gyroBuf.push(calculateLR(pGyroDataXYZ));*/
 }
 
 /**
@@ -159,10 +167,11 @@ void read_gyro_and_magnetometer(){
         double mse = computeMSE(omegaCrossB, timeDiffMagnetometer);
         //printf("%f \n", mse);
         if (mse >= 71350000000000000){
-            printf("Under Attack\n");
+            printf("Under attack\n");
             led = 1;
         }
         else{
+            printf("No attack\n");
             led = 0;
         }
         delete [] omegaCrossB;
