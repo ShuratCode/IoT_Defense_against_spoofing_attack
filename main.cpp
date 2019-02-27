@@ -27,7 +27,13 @@ double calculateLR(float pGyroDataXYZ[3]);
 double computeMSE(double* zeta, double* eta);
 double* calculateTimeDiffMagnetometer(int16_t pDataXYZ[3]);
 double* calculateOmegaCrossB(float pGyroDataXYZ[3], int16_t pDataXYZ[3]);
-void flip();
+void check_button();
+void updateLeds();
+void init();
+
+/* Booleans of states */
+bool singleSensorState;
+bool defenceState;
 
 /* Global Variables Declaration */
 int16_t pDataXYZ[3] = {0};
@@ -35,7 +41,8 @@ float pGyroDataXYZ[3] = {0};
 
 // Leds and button
 DigitalOut led(LED1);
-DigitalOut flash(LED4);
+DigitalOut defenceLed(LED2);
+DigitalOut singleSensorLed(LED3);
 InterruptIn btn(USER_BUTTON);
 
 // Gyro buffers
@@ -51,15 +58,43 @@ PwmOut _pwm(D0);
  * Main function
  */
 int main() {
-    btn.rise(&flip);
-    // TODO - check the button that change between the modes
-    bool collectData = false;
-    singleSensor(collectData);
+    init();
+    EventQueue queue;
+    btn.rise(&check_button);
+    printf("mainn\n");
+    queue.call_every(1000, updateLeds);
+    queue.dispatch(-1);
+    /*bool collectData = false;
+    singleSensor(collectData);*/
     //sensorFusionDataAndDefence();
 }
 
-void flip() {
-    led = !led;
+void init(){
+    defenceState = false;
+    singleSensorState = false;
+}
+
+void check_button() {
+    if(!defenceState){ // no defence
+        singleSensorState = true;
+        defenceState = true;
+        printf("was not defence, now single sensor \n");
+    }
+    else{ //defence
+        if(singleSensorState){
+            singleSensorState = false;
+            printf("was single sensor, now sensor fusion \n");
+        }
+        else{
+            defenceState = false;
+            printf("was sensor fusion, now no defence \n");
+        }
+    }
+}
+
+void updateLeds() {
+    defenceLed = defenceState;
+    singleSensorLed = singleSensorState;
 }
 
 /**
