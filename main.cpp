@@ -88,7 +88,6 @@ void read_gyro(bool collectData){
         }
         else{
             singleSensorDefence(gyroMax, gyroMin, gyroStandardDev);
-            //singleSensorDefence(247405, 4590.2, 63222.5);
         }
         gyroBuf.reset();
     }
