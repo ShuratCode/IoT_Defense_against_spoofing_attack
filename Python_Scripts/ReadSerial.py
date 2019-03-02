@@ -23,7 +23,7 @@ if len(sys.argv) == 3:
     # title = "MSE"
     title = "Not_attack Under_attack"
     lineList = [title.split()]
-    timeout = time.time() + 10
+    timeout = time.time() + 100
     attacks = 0
     non_attacks = 0
     ''' loop all the time and collect the data. Insert the data to csv file.'''

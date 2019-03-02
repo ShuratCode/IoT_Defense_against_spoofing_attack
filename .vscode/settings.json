@@ -1,5 +1,10 @@
 // Place your settings in this file to overwrite default and user settings.
 {
     "C_Cpp.addWorkspaceRootToIncludePath": false,
-    "C_Cpp.intelliSenseEngine": "Tag Parser"
+    "C_Cpp.intelliSenseEngine": "Tag Parser",
+    "python.pythonPath": "C:\\Python37\\python.exe",
+    "files.associations": {
+        "limits": "cpp",
+        "cmath": "cpp"
+    }
 }
