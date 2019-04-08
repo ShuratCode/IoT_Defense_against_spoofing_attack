@@ -11,7 +11,7 @@
 using namespace std;
 
 /* Defines */
-#define BUFFER_SIZE 200
+#define BUFFER_SIZE 300
 
 /* Functions Declaration */
 void singleSensorDefence(double max, double min, double standardDev);
@@ -26,6 +26,8 @@ double *calculateOmegaCrossB(float pGyroDataXYZ[3], int16_t pDataXYZ[3]);
 void check_button();
 void updateLeds();
 void init();
+void read_mag();
+void magnoDefence(double mean, double max);
 
 /* Booleans of states */
 bool singleSensorState;
@@ -45,10 +47,11 @@ InterruptIn btn(USER_BUTTON);
 MyCircularBuffer<double, BUFFER_SIZE> gyroBuf;
 
 // Magno buffers
-MyCircularBuffer<int16_t *, BUFFER_SIZE> magnoBuf;
+MyCircularBuffer<double, BUFFER_SIZE> magnoBuf;
 
 // Configure PwmOut
 PwmOut _pwm(D0);
+PwmOut _pwm2(D1);
 
 /**
  * Main function
@@ -102,7 +105,7 @@ void updateLeds()
         {
             singleSensorLed = 1;
             sensorFusionLed = 0;
-            read_gyro();
+            read_gyro(); 
         }
         else
         {
@@ -144,6 +147,29 @@ void read_gyro()
 }
 
 /**
+ * Read the magnetometer readings and calculate the features
+ * */
+void read_mag()
+{
+    BSP_MAGNETO_GetXYZ(pDataXYZ);
+
+    // Collect features when the buffer is full, print them and reset the buffer
+    if (magnoBuf.full())
+    {
+        double magnoMax = magnoBuf.max();
+        double magnoMean = magnoBuf.mean();
+        double magnoMin = magnoBuf.min();
+        double magnoSTD = magnoBuf.standardDev();
+        double magnoAvgDev = magnoBuf.avgDev();
+        magnoDefence(magnoMean, magnoMax);
+        magnoBuf.reset();
+    }
+
+    // Get data from the gyroscope, normalize and push it to the buffer
+    magnoBuf.push(sqrt(pow(pDataXYZ[0], 2) + pow(pDataXYZ[1], 2) + pow(pDataXYZ[2], 2)));
+}
+
+/**
  * Will calculate the LR for the single sensor defence. 
  * @param pGyroDataXYZ array of readings from the gyroscop
  */
@@ -165,6 +191,7 @@ void controlServo(float pGyroDataXYZ[3])
 {
     float xGyro = pGyroDataXYZ[0];
     _pwm.pulsewidth_us(1500 + xGyro / 1000.0);
+    _pwm2.pulsewidth_us(1500 - xGyro / 1000.0);
 }
 
 /**
@@ -189,9 +216,14 @@ void read_gyro_and_magnetometer()
         delete[] omegaCrossB;
         delete[] timeDiffMagnetometer;
     }
-    magnoBuf.push(pDataXYZ);
+    //magnoBuf.push(pDataXYZ);
 }
 
+
+/**
+ * Run sensor fusion defence. Getting the MSE and decide if the node
+ * is under attack or not. 
+ */
 void sensorFusionDefence(double mse)
 {
     if (mse >= 71350000000000000)
@@ -213,7 +245,7 @@ double *calculateTimeDiffMagnetometer(int16_t pDataXYZ[3])
 {
     double *result = new double[3];
     int16_t *lastMagno;
-    magnoBuf.peek(lastMagno);
+    //magnoBuf.peek(lastMagno);
     result[0] = (pDataXYZ[0] - lastMagno[0]) / 5;
     result[1] = (pDataXYZ[1] - lastMagno[1]) / 5;
     result[2] = (pDataXYZ[2] - lastMagno[2]) / 5;
@@ -284,5 +316,28 @@ void singleSensorDefence(double max, double min, double standardDev)
     else
     {
         led = 0;
+    }
+}
+
+/**
+ * Run single sensor defence based on the magnetometer features.
+ */
+void magnoDefence(double mean, double max){
+    printf("mean: %f, max: %f ", mean, max);
+    if (mean >= 756.224){
+        if (max < 976.145){
+            if(mean < 790.531){
+                printf("Under attack\n");
+            }
+            else{
+                printf("No attack\n");
+            }
+        }
+        else{
+            printf("No attack\n");
+        }
+    }
+    else {
+        printf("No attack\n");
     }
 }
