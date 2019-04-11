@@ -11,7 +11,7 @@
 using namespace std;
 
 /* Defines */
-#define BUFFER_SIZE 300
+#define BUFFER_SIZE 200
 
 /* Functions Declaration */
 void singleSensorDefence(double max, double min, double standardDev);
@@ -47,7 +47,10 @@ InterruptIn btn(USER_BUTTON);
 MyCircularBuffer<double, BUFFER_SIZE> gyroBuf;
 
 // Magno buffers
+MyCircularBuffer<int16_t*, BUFFER_SIZE> magnoSFBuf;
 MyCircularBuffer<double, BUFFER_SIZE> magnoBuf;
+
+
 
 // Configure PwmOut
 PwmOut _pwm(D0);
@@ -61,7 +64,7 @@ int main()
     init();
     EventQueue queue;
     btn.rise(&check_button);
-    printf("main\n");
+    cout << "main" << endl;
     queue.call_every(5, updateLeds);
     queue.dispatch(-1);
 }
@@ -80,19 +83,19 @@ void check_button()
     { // no defence
         singleSensorState = true;
         defenceState = true;
-        printf("Changed from no defense to single sensor \n");
+        cout << "Changed from no defense to single sensor" << endl;
     }
     else
     { //defence
         if (singleSensorState)
         {
             singleSensorState = false;
-            printf("Changed from single sensor to sensor fusion \n");
+            cout << "Changed from single sensor to sensor fusion"<< endl;
         }
         else
         {
             defenceState = false;
-            printf("changed from sensor fusion to no defence \n");
+            cout << "changed from sensor fusion to no defence" << endl;
         }
     }
 }
@@ -207,7 +210,7 @@ void read_gyro_and_magnetometer()
     BSP_MAGNETO_GetXYZ(pDataXYZ);
 
     // Compute the features when the mse buffer is full
-    if (!magnoBuf.empty())
+    if (!magnoSFBuf.empty())
     {
         double *omegaCrossB = calculateOmegaCrossB(pGyroDataXYZ, pDataXYZ);
         double *timeDiffMagnetometer = calculateTimeDiffMagnetometer(pDataXYZ);
@@ -216,6 +219,7 @@ void read_gyro_and_magnetometer()
         delete[] omegaCrossB;
         delete[] timeDiffMagnetometer;
     }
+    magnoSFBuf.push(pDataXYZ);
 }
 
 
@@ -228,10 +232,12 @@ void sensorFusionDefence(double mse)
     if (mse >= 71350000000000000)
     {
         led = 1;
+        cout << "Under attack" << endl;
     }
     else
     {
         led = 0;
+        cout << "No attack" << endl;
     }
 }
 
@@ -298,22 +304,26 @@ void singleSensorDefence(double max, double min, double standardDev)
         if (min < 4590.13)
         {
             led = 0;
+            cout << "No attack" << endl;
         }
         else
         {
-            if (standardDev < 63222.4)
-            {
-                led = 1;
-            }
-            else
-            {
-                led = 0;
-            }
+          if (standardDev < 63222.4)
+           {
+               printf("Under attack\n");
+               led = 1;
+           }
+           else
+           {
+           printf("No attack\n");
+               led = 0;
+}
         }
     }
     else
     {
         led = 0;
+        cout << "No attack" << endl;
     }
 }
 
@@ -321,21 +331,20 @@ void singleSensorDefence(double max, double min, double standardDev)
  * Run single sensor defence based on the magnetometer features.
  */
 void magnoDefence(double mean, double max){
-    printf("mean: %f, max: %f ", mean, max);
     if (mean >= 756.224){
         if (max < 976.145){
             if(mean < 790.531){
-                printf("Under attack\n");
+                cout << "Under attack" << endl;
             }
             else{
-                printf("No attack\n");
+                cout << "No attack" << endl;
             }
         }
         else{
-            printf("No attack\n");
+            cout << "No attack" << endl;
         }
     }
     else {
-        printf("No attack\n");
+        cout << "No attack" << endl;
     }
 }
