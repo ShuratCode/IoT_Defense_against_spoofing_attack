@@ -170,11 +170,7 @@ void read_mag()
 }
 
 /**
-<<<<<<< HEAD
  * Will calculate the LR for the single sensor defence.
-=======
- * Will calculate the LR for the single sensor defence.
->>>>>>> c1061ddc2312d3c20aea80ef001696bdb81e90e2
  * @param pGyroDataXYZ array of readings from the gyroscop
  */
 double calculateLR(float pGyroDataXYZ[3])
