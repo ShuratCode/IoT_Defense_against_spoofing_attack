@@ -28,6 +28,8 @@ void updateLeds();
 void init();
 void read_mag();
 void magnoDefence(double mean, double max);
+void attack();
+void noAttack();
 
 /* Booleans of states */
 bool singleSensorState;
@@ -129,9 +131,8 @@ void updateLeds()
  */
 void read_gyro()
 {
-    // Get data from the gyroscope and pass it to the servo
+    // Get data from the gyroscope
     BSP_GYRO_GetXYZ(pGyroDataXYZ);
-    controlServo(pGyroDataXYZ);
 
     // Collect features when the buffer is full, print them and reset the buffer
     if (gyroBuf.full())
@@ -202,9 +203,8 @@ void controlServo(float pGyroDataXYZ[3])
  */
 void read_gyro_and_magnetometer()
 {
-    // Get data from the gyroscope and pass it to the servo
+    // Get data from the gyroscope
     BSP_GYRO_GetXYZ(pGyroDataXYZ);
-    controlServo(pGyroDataXYZ);
 
     // Get data from the magnetometer
     BSP_MAGNETO_GetXYZ(pDataXYZ);
@@ -231,13 +231,11 @@ void sensorFusionDefence(double mse)
 {
     if (mse >= 71350000000000000)
     {
-        led = 1;
-        cout << "Under attack" << endl;
+        attack();
     }
     else
     {
-        led = 0;
-        cout << "No attack" << endl;
+        noAttack();
     }
 }
 
@@ -303,27 +301,23 @@ void singleSensorDefence(double max, double min, double standardDev)
     {
         if (min < 4590.13)
         {
-            led = 0;
-            cout << "No attack" << endl;
+            noAttack();
         }
         else
         {
-          if (standardDev < 63222.4)
-           {
-               printf("Under attack\n");
-               led = 1;
-           }
-           else
-           {
-           printf("No attack\n");
-               led = 0;
-}
+            if (standardDev < 63222.4)
+            {
+                attack();
+            }
+            else
+            {
+                noAttack();
+            }
         }
     }
     else
     {
-        led = 0;
-        cout << "No attack" << endl;
+        noAttack();
     }
 }
 
@@ -334,17 +328,28 @@ void magnoDefence(double mean, double max){
     if (mean >= 756.224){
         if (max < 976.145){
             if(mean < 790.531){
-                cout << "Under attack" << endl;
+                attack();
             }
             else{
-                cout << "No attack" << endl;
+                noAttack();
             }
         }
         else{
-            cout << "No attack" << endl;
+            noAttack();
         }
     }
     else {
-        cout << "No attack" << endl;
+        noAttack();
     }
+}
+
+void attack(){
+    led = 1;
+    cout << "Under attack" << endl;
+}
+
+void noAttack(){
+    led = 0;
+    cout << "No attack" << endl;
+    controlServo(pGyroDataXYZ);
 }
