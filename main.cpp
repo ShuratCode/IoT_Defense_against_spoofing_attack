@@ -67,7 +67,7 @@ int main()
     EventQueue queue;
     btn.rise(&check_button);
     cout << "main" << endl;
-    queue.call_every(5, updateLeds);
+    queue.call_every(10, updateLeds);
     queue.dispatch(-1);
 }
 
@@ -123,6 +123,8 @@ void updateLeds()
     {
         singleSensorLed = 0;
         sensorFusionLed = 0;
+        BSP_GYRO_GetXYZ(pGyroDataXYZ);
+        controlServo(pGyroDataXYZ);
     }
 }
 
@@ -228,10 +230,11 @@ void read_gyro_and_magnetometer()
  * is under attack or not.
  */
 void sensorFusionDefence(double mse)
-{
+{   
     if (mse >= 71350000000000000)
     {
         attack();
+        wait(1.0);
     }
     else
     {
